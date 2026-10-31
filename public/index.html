@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>UZ PROJECTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#101827; --panel:#172238; --panel2:#1d2a44; --line:#2a3858; --text:#eaeef6; --muted:#97a3bb;
+  --tile:#34b6c6; --gold:#e2b457; --rose:#e88080; --ok:#5cc28a;
+  --r-lg:18px; --r-sm:10px;
+  font-family:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--text)}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom));font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--tile)}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header.top{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--tile),#1f6f86);display:grid;place-items:center;font-weight:800;letter-spacing:-.5px}
+.top h1{font-size:18px;margin:0;font-weight:800}
+.top small{color:var(--muted);display:block;font-size:12.5px}
+.sync-dot{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right}
+h2{font-size:24px;line-height:1.15;margin:4px 0 6px;font-weight:800;letter-spacing:-.4px}
+h3{font-size:16px;margin:0 0 8px}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+.stat b{display:block;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.stat span{color:var(--muted);font-size:13px}
+.stat.gold b{color:var(--gold)} .stat.tile b{color:var(--tile)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:11px 14px;font-weight:600;min-height:44px;cursor:pointer}
+.btn.primary{background:var(--tile);border-color:var(--tile);color:#06232a}
+.btn.danger{border-color:#5a2c35;color:var(--rose);background:transparent}
+.btn.small{padding:7px 10px;min-height:36px;font-size:13.5px;border-radius:10px}
+.btn:disabled{opacity:.5}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible{outline:2px solid var(--tile);outline-offset:2px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin:14px 0 6px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 6px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--panel2);color:var(--text)}
+.rank{list-style:none;margin:0;padding:0}
+.rank li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.rank li:last-child{border-bottom:0}
+.rank .n{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.rank .bar{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.rank .bar i{display:block;height:100%;border-radius:3px}
+.rank .v{font-weight:800;font-variant-numeric:tabular-nums}
+.region{border-bottom:1px solid var(--line)}
+.region:last-child{border-bottom:0}
+.region > button{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:13px 0;cursor:pointer;text-align:left}
+.region .meta{color:var(--muted);font-size:13px}
+.slots{display:grid;gap:8px;padding:0 0 14px}
+.slot{background:var(--panel2);border-radius:12px;padding:12px;border:1px solid var(--line)}
+.slot.empty{border-style:dashed;background:transparent}
+.slot .head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.slot .head strong{font-size:14px}
+.slot .likes{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.slot .title{color:var(--muted);font-size:13px;margin:4px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-block;font-size:11.5px;padding:2px 7px;border-radius:999px;background:var(--line);color:var(--muted);font-weight:600}
+.badge.ok{background:#173d2c;color:var(--ok)} .badge.warn{background:#3d2f15;color:var(--gold)} .badge.err{background:#3f1d24;color:var(--rose)}
+.err{color:var(--rose);font-size:13px;margin:6px 0 0}
+.note{border-left:3px solid var(--gold);padding:8px 12px;background:#1f2638;border-radius:0 10px 10px 0;font-size:14px;margin:10px 0}
+.note.bad{border-color:var(--rose)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#0c1220ee;backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:20}
+nav.tabs .in{display:flex;max-width:720px;width:100%}
+nav.tabs button{flex:1;background:none;border:0;padding:6px 2px;color:var(--muted);font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:52px}
+nav.tabs button span{font-size:20px;line-height:1}
+nav.tabs button.on{color:var(--text)}
+.proj{display:block;width:100%;text-align:left;cursor:pointer}
+.proj .big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input.i,select.i{width:100%;background:var(--night);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:46px}
+.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-size:14px}
+.check input{width:20px;height:20px;margin-top:2px}
+dialog{border:0;padding:0;background:transparent;color:var(--text);max-width:560px;width:calc(100% - 20px)}
+dialog::backdrop{background:#050912cc}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;max-height:86vh;overflow:auto}
+.sheet h3{font-size:18px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;z-index:50;max-width:92vw;font-size:14px;box-shadow:0 8px 30px #0008}
+.toast.bad{border-color:var(--rose)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+/* Skyline — 14 ta minora */
+.skyline{position:relative;height:260px;display:flex;align-items:flex-end;gap:4px;padding:28px 2px 0;border-bottom:2px solid var(--line);
+  background:linear-gradient(180deg,#0d1424 0%,#14203a 100%);border-radius:14px 14px 0 0;overflow:hidden}
+.tower{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.tower i{display:block;width:100%;min-height:3px;border-radius:4px 4px 0 0;
+  background:repeating-linear-gradient(180deg,#2c8fa0 0 6px,#246f80 6px 8px);transition:height .6s ease}
+.tower.top i{background:repeating-linear-gradient(180deg,var(--gold) 0 6px,#b98d3c 6px 8px)}
+.tower b{font-size:10.5px;font-variant-numeric:tabular-nums;margin-bottom:3px}
+.towerlabels{display:flex;gap:4px;padding:6px 2px 0}
+.towerlabels span{flex:1;font-size:9.5px;color:var(--muted);text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);height:78px;white-space:nowrap}
+.vid{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.vid:last-child{border-bottom:0}
+.day{font-weight:800;font-size:20px;min-width:44px}
+.hist{font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.hist:last-child{border-bottom:0}
+.hist time{color:var(--muted);font-size:12px;display:block}
+ol.steps{padding-left:20px;margin:6px 0} ol.steps li{margin:6px 0}
+.cmt{padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cmt small{color:var(--muted);display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">UZ</div>
+    <div><h1>UZ PROJECTS</h1><small>Loyihalar boshqaruv paneli</small></div>
+    <div class="sync-dot" id="syncDot"></div>
+  </header>
+  <main id="view"><p class="muted"><span class="spin"></span> Yuklanmoqda…</p></main>
+</div>
+
+<nav class="tabs" aria-label="Bo‘limlar"><div class="in">
+  <button data-tab="home"><span>🏠</span>Bosh sahifa</button>
+  <button data-tab="fs"><span>🏆</span>Unutilgan Ruhlar</button>
+  <button data-tab="sky"><span>🏙️</span>Skyline</button>
+  <button data-tab="settings"><span>⚙️</span>Sozlamalar</button>
+</div></nav>
+
+<dialog id="dlg"><div class="sheet" id="dlgBody"></div></dialog>
+
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('ru-RU'));
+const when = (t) => {
+  if (!t) return 'hali yo‘q';
+  const d = new Date(t), diff = (Date.now() - d) / 60000;
+  if (diff < 1) return 'hozirgina';
+  if (diff < 60) return `${Math.round(diff)} daqiqa oldin`;
+  if (diff < 1440) return `${Math.round(diff / 60)} soat oldin`;
+  return d.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+const PLAT = { yt: 'YouTube', ig: 'Instagram' };
+const LANG = { uz: 'O‘zbekcha', en: 'Inglizcha' };
+const SLOT_ORDER = [['ig', 'uz'], ['ig', 'en'], ['yt', 'uz'], ['yt', 'en']];
+
+let S = null;            // serverdan kelgan holat
+let tab = localStorage.getItem('uzp-tab') || 'home';
+let fsView = 'likes';
+let openRegion = null;
+let busy = false;
+
+const adminKey = () => localStorage.getItem('uzp-admin') || '';
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': adminKey() }, body: JSON.stringify(body) };
+  let r;
+  try { r = await fetch('/api' + path, opt); } catch { throw new Error('Internet aloqasi yo‘q yoki server javob bermadi.'); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || `Xato (${r.status})`); e.code = j.code; throw e; }
+  return j;
+}
+
+function toast(msg, bad) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (bad ? ' bad' : '');
+  t.textContent = msg;
+  t.setAttribute('role', 'status');
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), bad ? 6000 : 3000);
+}
+
+async function load(silent) {
+  try {
+    S = await api('/state');
+    render();
+  } catch (e) {
+    if (!silent) $('#view').innerHTML = `<div class="note bad">${esc(e.message)}</div><button class="btn" onclick="load()">Qayta urinish</button>`;
+  }
+}
+
+// ---------- Dialoglar ----------
+const dlg = $('#dlg');
+function openDlg(html) { $('#dlgBody').innerHTML = html; if (!dlg.open) dlg.showModal(); }
+function closeDlg() { dlg.close(); }
+dlg.addEventListener('click', (e) => { if (e.target === dlg) closeDlg(); });
+
+function confirmDlg(text, okText = 'Ha, davom etish', danger = true) {
+  return new Promise((res) => {
+    openDlg(`<h3>Tasdiqlang</h3><p>${esc(text)}</p><div class="row" style="justify-content:flex-end;margin-top:14px">
+      <button class="btn" id="cNo">Bekor qilish</button><button class="btn ${danger ? 'danger' : 'primary'}" id="cYes">${esc(okText)}</button></div>`);
+    $('#cNo').onclick = () => { closeDlg(); res(false); };
+    $('#cYes').onclick = () => { closeDlg(); res(true); };
+  });
+}
+function numberDlg(title, hint, value, allowEmpty) {
+  return new Promise((res) => {
+    openDlg(`<h3>${esc(title)}</h3><p class="muted">${esc(hint)}</p>
+      <input class="i" id="nIn" inputmode="numeric" value="${esc(value ?? '')}">
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn" id="nNo">Bekor qilish</button><button class="btn primary" id="nOk">Saqlash</button></div>`);
+    $('#nNo').onclick = () => { closeDlg(); res(undefined); };
+    $('#nOk').onclick = () => {
+      const v = $('#nIn').value.trim();
+      if (v === '' && allowEmpty) { closeDlg(); return res(null); }
+      if (!/^-?\d+$/.test(v)) return toast('Butun son kiriting.', true);
+      closeDlg(); res(Number(v));
+    };
+  });
+}
+
+function needAdmin() {
+  if (adminKey()) return true;
+  toast('Avval Sozlamalar bo‘limida parolni kiriting.', true);
+  go('settings');
+  return false;
+}
+
+async function act(fn, okMsg) {
+  if (!needAdmin() || busy) return;
+  busy = true; render();
+  try {
+    const r = await fn();
+    if (okMsg) toast(typeof okMsg === 'function' ? okMsg(r) : okMsg);
+    await load(true);
+  } catch (e) {
+    toast(e.message, true);
+    if (e.code === 'UNAUTHORIZED') localStorage.removeItem('uzp-admin');
+  } finally { busy = false; render(); }
+}
+
+// ---------- Ko‘rinishlar ----------
+function go(t) { tab = t; localStorage.setItem('uzp-tab', t); render(); scrollTo(0, 0); }
+document.querySelectorAll('nav.tabs button').forEach((b) => (b.onclick = () => go(b.dataset.tab)));
+
+function render() {
+  document.querySelectorAll('nav.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  if (!S) return;
+  const last = Math.max(S.fs.lastSync || 0, S.sky.lastSync || 0);
+  $('#syncDot').innerHTML = busy ? '<span class="spin"></span> Ishlayapti' : `Yangilangan<br>${esc(when(last || null))}`;
+  $('#view').innerHTML = ({ home: viewHome, fs: viewFs, sky: viewSky, settings: viewSettings }[tab] || viewHome)();
+  bind();
+}
+
+function syncResultNote(r, kind) {
+  if (!r) return '';
+  const errs = (r.errors || []).slice(0, 4).map((e) => `<div>${esc(e)}</div>`).join('');
+  if (kind === 'fs') {
+    return `<div class="note ${r.failed ? 'bad' : ''}">Oxirgi yangilash ${esc(when(r.at))}: ${r.updated} ta video yangilandi${r.failed ? `, ${r.failed} tasida xato` : ''}${r.skipped ? `, ${r.skipped} ta Instagram video kutmoqda (ulanmagan)` : ''}. Yangi izohlar: ${r.newComments}, yangi eslatmalar: ${r.newMentions}.${r.partial ? ' Hammasi ulgurmadi — yana bir marta yangilang.' : ''}${errs}</div>`;
+  }
+  if (r.skipped === 'inactive') return '';
+  return `<div class="note ${r.failed ? 'bad' : ''}">Oxirgi hisob ${esc(when(r.at))}: ${r.processed} ta video hisoblandi, +${r.meters} m.${errs}</div>`;
+}
+
+function viewHome() {
+  const fs = S.fs, sky = S.sky, ig = S.integrations.instagram, sch = S.status.scheduled;
+  const topFs = [...fs.regions].sort((a, b) => b.likes - a.likes)[0];
+  return `
+  <h2>Kontent statistikasi bir joyda</h2>
+  <p class="muted">Ikki loyiha ma’lumotlari alohida saqlanadi va hech qachon aralashmaydi.</p>
+  <button class="card proj" data-go="fs"><h3>🏆 Unutilgan Ruhlar</h3>
+    <div class="row" style="gap:22px">
+      <div><div class="big" style="color:var(--gold)">${fmt(fs.totals.likes)}</div><span class="muted">jami like</span></div>
+      <div><div class="big" style="color:var(--tile)">${fmt(fs.totals.mentions)}</div><span class="muted">hudud eslatmasi</span></div>
+      <div><div class="big">${fs.totals.videos}<small class="muted" style="font-size:16px"> / 56</small></div><span class="muted">video</span></div>
+    </div>
+    ${topFs && topFs.likes ? `<p class="muted" style="margin-top:10px">Like bo‘yicha yetakchi: <b style="color:var(--text)">${esc(topFs.name)}</b></p>` : ''}
+  </button>
+  <button class="card proj" data-go="sky"><h3>🏙️ Regional Skyline</h3>
+    ${sky.videos.length ? `<div class="row" style="gap:22px"><div><div class="big">${fmt(sky.totals.meters)} m</div><span class="muted">jami balandlik</span></div><div><div class="big">${sky.videos.length}</div><span class="muted">video</span></div></div>`
+      : '<p class="muted">Hali boshlanmagan. Videolar qo‘shilgach hisoblash boshlanadi.</p>'}
+    <p class="muted" style="margin-top:8px">${sky.active ? 'Kunlik hisoblash yoqilgan' : 'Kunlik hisoblash o‘chirilgan'}</p>
+  </button>
+  <div class="card"><h3>Sinxronlash holati</h3>
+    <p>YouTube: ${S.integrations.youtube.configured ? '<span class="badge ok">kalit sozlangan</span>' : '<span class="badge err">YOUTUBE_API_KEY yo‘q</span>'}</p>
+    <p>Instagram: ${ig.connected ? `<span class="badge ok">ulangan${ig.username ? ' @' + esc(ig.username) : ''}</span>` : '<span class="badge warn">ulanmagan</span>'}</p>
+    <p>Avtomatik yangilash (har soat): ${sch ? `oxirgi marta ${esc(when(sch.at))}${sch.fs?.error ? ` <span class="badge err">${esc(sch.fs.error)}</span>` : ' <span class="badge ok">ishlayapti</span>'}` : '<span class="badge warn">hali ishga tushmagan</span>'}</p>
+    <p>Boshqaruv paroli: ${S.integrations.admin.configured ? (adminKey() ? '<span class="badge ok">kiritilgan</span>' : '<span class="badge warn">bu qurilmada kiritilmagan</span>') : '<span class="badge err">ADMIN_PASSWORD o‘rnatilmagan</span>'}</p>
+    <button class="btn primary" data-act="syncAll" ${busy ? 'disabled' : ''}>${busy ? '<span class="spin"></span> Yangilanmoqda…' : 'Hammasini hozir yangilash'}</button>
+  </div>`;
+}
+
+function viewFs() {
+  const fs = S.fs;
+  const t = fs.totals;
+  let body = '';
+  if (fsView === 'likes' || fsView === 'mentions') {
+    const key = fsView;
+    const list = [...fs.regions].sort((a, b) => b[key] - a[key]);
+    const max = Math.max(1, ...list.map((r) => r[key]));
+    body = `<div class="card"><h3>${key === 'likes' ? 'Like reytingi' : 'Izohlardagi eslatmalar'}</h3>
+      ${key === 'mentions' ? '<p class="muted">Hududni bosing — uni tilga olgan izohlar ko‘rinadi.</p>' : ''}
+      <ul class="rank">${list.map((r, i) => `<li data-region="${r.id}" data-kind="${key}">
+        <span class="n">${i + 1}</span>
+        <div><div>${esc(r.name)}${key === 'mentions' && r.mentionCorrection ? ` <span class="badge warn">tuzatish ${r.mentionCorrection > 0 ? '+' : ''}${r.mentionCorrection}</span>` : ''}</div>
+        <div class="bar"><i style="width:${(Math.max(0, r[key]) / max) * 100}%;background:${key === 'likes' ? 'var(--gold)' : 'var(--tile)'}"></i></div></div>
+        <span class="v">${fmt(r[key])}</span></li>`).join('')}</ul></div>`;
+  } else {
+    body = `<div class="card">${fs.regions.map((r) => regionBlock(r)).join('')}</div>`;
+  }
+  return `
+  <h2>Unutilgan Ruhlar</h2>
+  <p class="muted">Forgotten Spirits · 14 hudud, har birida 4 ta video joyi</p>
+  <div class="stats">
+    <div class="stat gold"><b>${fmt(t.likes)}</b><span>Jami like</span></div>
+    <div class="stat tile"><b>${fmt(t.mentions)}</b><span>Hudud eslatmalari</span></div>
+    <div class="stat"><b>${t.videos} / 56</b><span>Qo‘shilgan videolar</span></div>
+    <div class="stat"><b style="font-size:17px">${esc(when(fs.lastSync))}</b><span>Oxirgi yangilanish</span></div>
+  </div>
+  <div class="row">
+    <button class="btn primary" data-act="addFs">＋ Video qo‘shish</button>
+    <button class="btn" data-act="syncFs" ${busy ? 'disabled' : ''}>${busy ? '<span class="spin"></span> Yangilanmoqda…' : '↻ Statistikani yangilash'}</button>
+  </div>
+  ${syncResultNote(fs.lastResult, 'fs')}
+  <div class="seg" role="tablist">
+    <button class="${fsView === 'likes' ? 'on' : ''}" data-fsview="likes">Like reytingi</button>
+    <button class="${fsView === 'mentions' ? 'on' : ''}" data-fsview="mentions">Izohlar reytingi</button>
+    <button class="${fsView === 'regions' ? 'on' : ''}" data-fsview="regions">Videolar</button>
+  </div>
+  ${body}`;
+}
+
+function regionBlock(r) {
+  const filled = Object.keys(r.slots).length;
+  const open = openRegion === r.id;
+  return `<div class="region"><button data-toggle="${r.id}" aria-expanded="${open}">
+    <span><b>${esc(r.name)}</b><br><span class="meta">${filled}/4 video · ${fmt(r.likes)} like · ${fmt(r.mentions)} eslatma</span></span><span>${open ? '▴' : '▾'}</span></button>
+    ${open ? `<div class="slots">${SLOT_ORDER.map(([p, l]) => slotCard(r, p, l)).join('')}</div>` : ''}</div>`;
+}
+
+function slotCard(r, p, l) {
+  const v = r.slots[`${p}|${l}`];
+  const slot = `${r.id}|${p}|${l}`;
+  const label = `${PLAT[p]} · ${LANG[l]}`;
+  if (!v) return `<div class="slot empty"><div class="head"><strong>${label}</strong><span class="muted">bo‘sh</span></div>
+    <div style="margin-top:8px"><button class="btn small" data-addslot="${slot}">＋ Video qo‘shish</button></div></div>`;
+  const src = v.likesSource === 'api' ? '<span class="badge ok">API</span>' : v.likesSource === 'manual' ? '<span class="badge warn">qo‘lda</span>' : '<span class="badge">ma’lumot yo‘q</span>';
+  return `<div class="slot"><div class="head"><strong>${label}</strong><span class="likes">${fmt(v.effectiveLikes)} ♥</span></div>
+    <div class="title">${esc(v.title || v.url)}</div>
+    <div class="row" style="gap:6px">${src}<span class="badge">${v.commentCount != null ? fmt(v.commentCount) + ' izoh' : 'izoh soni —'}</span><span class="badge">${esc(when(v.lastSync))}</span></div>
+    ${v.error ? `<p class="err">${esc(v.error)}</p>` : ''}${v.note ? `<p class="muted" style="font-size:13px;margin:6px 0 0">${esc(v.note)}</p>` : ''}
+    <div class="row" style="margin-top:10px;gap:6px">
+      <a class="btn small" href="${esc(v.url)}" target="_blank" rel="noopener">Ochish</a>
+      <button class="btn small" data-addslot="${slot}">Almashtirish</button>
+      <button class="btn small" data-manual="${slot}" data-cur="${v.manualLikes ?? ''}">Qo‘lda like</button>
+      <button class="btn small danger" data-rmslot="${slot}">O‘chirish</button></div></div>`;
+}
+
+function viewSky() {
+  const sky = S.sky;
+  const max = Math.max(1, ...sky.regions.map((r) => r.meters));
+  const topVal = Math.max(...sky.regions.map((r) => r.meters));
+  const status = (v) => v.status === 'processed' ? '<span class="badge ok">hisoblangan</span>' : v.due ? '<span class="badge warn">hisoblashga tayyor</span>' : '<span class="badge">kutilmoqda</span>';
+  return `
+  <h2>Regional Skyline</h2>
+  <p class="muted">Har bir izohda tilga olingan hudud minorasi +1 metr o‘sadi. Loyiha nomi hali tanlanmagan.</p>
+  ${!sky.active ? `<div class="note">Kunlik hisoblash o‘chirilgan. Videolarni qo‘shib, tayyor bo‘lgach “Hisoblashni boshlash”ni bosing.</div>` : ''}
+  <div class="card" style="padding:12px">
+    <div class="skyline" role="img" aria-label="Hududlar minoralari balandligi">
+      ${sky.regions.map((r) => `<div class="tower ${r.meters === topVal && topVal > 0 ? 'top' : ''}"><b>${fmt(r.meters)}</b><i style="height:${Math.max(1.5, (Math.max(0, r.meters) / max) * 86)}%"></i></div>`).join('')}
+    </div>
+    <div class="towerlabels" aria-hidden="true">${sky.regions.map((r) => `<span>${esc(r.name.replace(' viloyati', ' vil.').replace(' shahri', ' sh.'))}</span>`).join('')}</div>
+  </div>
+  <div class="row">
+    <button class="btn primary" data-act="addSky">＋ Video qo‘shish</button>
+    <button class="btn" data-act="skyActive">${sky.active ? 'Hisoblashni to‘xtatish' : 'Hisoblashni boshlash'}</button>
+    ${sky.active ? `<button class="btn" data-act="syncSky" ${busy ? 'disabled' : ''}>↻ Tayyorlarini hisoblash</button>` : ''}
+  </div>
+  ${syncResultNote(sky.lastResult, 'sky')}
+  <div class="card"><h3>Hududlar balandligi</h3><p class="muted">Qo‘lda tuzatish uchun hududni bosing.</p>
+    <ul class="rank">${[...sky.regions].sort((a, b) => b.meters - a.meters).map((r, i) => `<li data-skycorr="${r.id}" data-cur="${r.correction}">
+      <span class="n">${i + 1}</span><div>${esc(r.name)}${r.correction ? ` <span class="badge warn">tuzatish ${r.correction > 0 ? '+' : ''}${r.correction} m</span>` : ''}</div><span class="v">${fmt(r.meters)} m</span></li>`).join('')}</ul></div>
+  <div class="card"><h3>Kunlik videolar</h3>
+    ${sky.videos.length ? sky.videos.map((v) => `<div class="vid"><div class="day">${v.day}<small class="muted" style="font-size:11px;display:block;font-weight:500">-kun</small></div>
+      <div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.title || v.url)}</div>
+        <div class="row" style="gap:6px;margin-top:4px">${status(v)}<span class="badge">${PLAT[v.platform]}</span>${v.status === 'processed' ? `<span class="badge">${v.counted} izoh</span>` : ''}</div>
+        ${v.error ? `<p class="err">${esc(v.error)}</p>` : ''}
+        <div class="row" style="gap:6px;margin-top:8px">
+          <button class="btn small" data-process="${esc(v.id)}" data-done="${v.status === 'processed'}">${v.status === 'processed' ? 'Yangi izohlarni qo‘shish' : 'Hozir hisoblash'}</button>
+          <button class="btn small" data-skyday="${esc(v.id)}" data-cur="${v.day}">Kunni o‘zgartirish</button>
+          <button class="btn small danger" data-skyrm="${esc(v.id)}">O‘chirish</button></div></div></div>`).join('')
+      : '<p class="muted">Hali video yo‘q. Birinchi kun videosini qo‘shing.</p>'}
+    <p class="muted" style="font-size:13px;margin-top:10px">Qoida: video undan keyingi kun videosi qo‘shilganda yoki chiqqaniga 24 soat bo‘lganda avtomatik hisoblanadi. Har bir izoh faqat bir marta sanaladi.</p>
+  </div>
+  <div class="card"><h3>Tarix</h3>${sky.history.length ? sky.history.slice(0, 25).map((h) => `<div class="hist"><time>${esc(new Date(h.at).toLocaleString('uz-UZ'))}</time>${esc(h.text)}</div>`).join('') : '<p class="muted">Hali yozuv yo‘q.</p>'}</div>`;
+}
+
+function viewSettings() {
+  const ig = S.integrations.instagram;
+  return `
+  <h2>Sozlamalar</h2>
+  <div class="card"><h3>Boshqaruv paroli</h3>
+    ${S.integrations.admin.configured ? `<p class="muted">Video qo‘shish, o‘chirish va yangilash uchun kerak. Parol faqat shu telefonda saqlanadi.</p>
+      <input class="i" id="admIn" type="password" autocomplete="current-password" placeholder="Parol" value="">
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="saveAdmin">Kirish</button>${adminKey() ? '<button class="btn" data-act="logout">Chiqish</button> <span class="badge ok">kiritilgan</span>' : ''}</div>`
+    : `<div class="note bad">Netlify’da ADMIN_PASSWORD o‘zgaruvchisi yo‘q. Netlify → Site configuration → Environment variables → Add variable: kalit <b>ADMIN_PASSWORD</b>, qiymat — o‘zingiz o‘ylagan parol. Keyin saytni qayta deploy qiling.</div>`}
+  </div>
+  <div class="card"><h3>Instagram</h3>
+    ${ig.connected ? `<p><span class="badge ok">Ulangan${ig.username ? ' @' + esc(ig.username) : ''}</span> ${ig.source === 'env' ? '<span class="badge">Netlify o‘zgaruvchisidan</span>' : ''}</p>
+      <p class="muted">Token har hafta avtomatik yangilanadi (60 kunlik muddat uzayadi).${ig.refreshedAt ? ' Oxirgi yangilash: ' + esc(when(ig.refreshedAt)) + '.' : ''}</p>
+      <div class="row"><button class="btn" data-act="igRefresh">Tokenni hozir yangilash</button>${ig.source === 'app' ? '<button class="btn danger" data-act="igOff">Uzish</button>' : ''}</div>`
+    : `<p class="muted">Hozir Instagram ulanmagan. Instagram videolar uchun like’ni qo‘lda kiritish mumkin.</p>`}
+    <label class="f" for="igIn">Yangi access token</label>
+    <input class="i" id="igIn" type="password" autocomplete="off" placeholder="IGAA… bilan boshlanadigan token">
+    <div class="row" style="margin-top:10px"><button class="btn primary" data-act="igConnect">Tekshirish va ulash</button></div>
+    <details style="margin-top:14px"><summary><b>Tokenni qanday olaman?</b></summary>
+      <ol class="steps">
+        <li>Kompyuter rejimida (Chrome → ⋮ → “Kompyuter versiyasi”) <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> saytiga Facebook bilan kiring.</li>
+        <li><b>Create app</b> → turi: <b>Business</b> (yoki “Other → Business”) → nom bering.</li>
+        <li>Ilova ichida <b>Instagram</b> mahsulotini qo‘shing → <b>API setup with Instagram login</b>.</li>
+        <li><b>Generate access tokens</b> bo‘limida <b>Add account</b> → @milliy_animatsiya bilan kiring va ruxsat bering.</li>
+        <li>Chiqqan tokenni nusxalab, yuqoridagi maydonga qo‘ying va “Tekshirish va ulash”ni bosing.</li>
+      </ol>
+      <p class="muted">Kerakli ruxsatlar: instagram_business_basic va instagram_business_manage_comments. O‘z akkauntingiz ilovaga ulanganda App Review shart emas. Token serverda saqlanadi va brauzerga hech qachon qaytarilmaydi.</p>
+    </details>
+  </div>
+  <div class="card"><h3>YouTube</h3>
+    <p>${S.integrations.youtube.configured ? '<span class="badge ok">YOUTUBE_API_KEY sozlangan</span>' : '<span class="badge err">YOUTUBE_API_KEY topilmadi</span>'}</p>
+    <div class="note">Kalit avval chatda yuborilgani uchun uni almashtirish tavsiya etiladi: Google Cloud Console → Credentials → kalitni “Regenerate” qiling, <b>API restrictions</b> bo‘limida faqat <b>YouTube Data API v3</b>ni tanlang (Website restrictions qo‘ymang — so‘rov serverdan boradi). Yangi kalitni Netlify’dagi YOUTUBE_API_KEY ga qo‘yib, qayta deploy qiling.</div>
+  </div>
+  <div class="card"><h3>Hudud nomlarini aniqlash qoidasi</h3>
+    <p class="muted">Lotin, kirill va inglizcha yozuvlar tanib olinadi (masalan: Samarqand, Самарқанд, Samarkand). Faqat “Toshkent” deb yozilsa — <b>Toshkent shahri</b>ga, “Toshkent viloyati / Tashkent region” deb yozilsa — <b>Toshkent viloyati</b>ga qo‘shiladi. “Alisher Navoiy” Navoiy viloyati deb sanalmaydi.</p>
+  </div>`;
+}
+
+// ---------- Video qo‘shish (Unutilgan Ruhlar) ----------
+function regionOptions(sel) { return S.regions.map((r) => `<option value="${r.id}" ${r.id === sel ? 'selected' : ''}>${esc(r.name)}</option>`).join(''); }
+
+function addFsDialog(slot) {
+  if (!needAdmin()) return;
+  const pre = slot ? slot.split('|') : [];
+  openDlg(`<h3>Video qo‘shish — Unutilgan Ruhlar</h3>
+    ${slot ? `<p class="muted">Joy: ${esc(S.regions.find((r) => r.id === pre[0]).name)} · ${PLAT[pre[1]]} · ${LANG[pre[2]]}</p>` : '<p class="muted">Havolani qo‘ying — platforma, hudud va til avtomatik aniqlanadi.</p>'}
+    <label class="f" for="uIn">YouTube yoki Instagram havolasi</label>
+    <input class="i" id="uIn" inputmode="url" placeholder="https://youtube.com/shorts/…">
+    <div class="row" style="margin-top:10px"><button class="btn primary" id="chk">Tekshirish</button><button class="btn" id="cl">Bekor qilish</button></div>
+    <div id="res"></div>`);
+  $('#cl').onclick = closeDlg;
+  $('#chk').onclick = async () => {
+    const url = $('#uIn').value.trim();
+    if (!url) return toast('Havolani kiriting.', true);
+    $('#res').innerHTML = '<p class="muted" style="margin-top:12px"><span class="spin"></span> Video tekshirilmoqda…</p>';
+    try {
+      const c = await api('/classify', { url });
+      showClassify(c, pre);
+    } catch (e) { $('#res').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  };
+}
+
+function showClassify(c, pre) {
+  const [preReg, prePlat, preLang] = pre;
+  const sug = c.slot ? c.slot.split('|') : [];
+  const region = preReg || sug[0] || c.regions[0] || '';
+  const lang = preLang || sug[2] || c.lang || '';
+  const mismatch = [];
+  if (prePlat && prePlat !== c.platform) mismatch.push(`Bu ${PLAT[c.platform]} havolasi, lekin tanlangan joy ${PLAT[prePlat]} uchun.`);
+  if (preReg && c.regions.length && !c.regions.includes(preReg)) mismatch.push('Tavsifdagi hudud tanlangan joydan farq qiladi.');
+  if (preLang && c.lang && c.lang !== preLang) mismatch.push('Tavsifdagi til tanlangan joydan farq qiladi.');
+  const sure = c.confident && !mismatch.length;
+  const reasons = [...mismatch, ...c.reasons];
+  $('#res').innerHTML = `<div class="card" style="margin-top:14px">
+    <p><span class="badge">${PLAT[c.platform]}</span> ${c.project === 'fs' ? '<span class="badge ok">Unutilgan Ruhlar</span>' : '<span class="badge warn">loyiha aniqlanmadi</span>'}</p>
+    ${c.info ? `<p style="margin-top:8px"><b>${esc(c.info.title || (c.info.caption || '').slice(0, 80) || 'Nomsiz')}</b></p><p class="muted">Like: ${fmt(c.info.likes)} · Izoh: ${fmt(c.info.commentCount)}</p>` : ''}
+    ${reasons.length ? `<div class="note ${sure ? '' : 'bad'}">${reasons.map(esc).join('<br>')}</div>` : '<p class="muted">Hudud va til tavsifdan aniqlandi.</p>'}
+    <label class="f" for="rSel">Hudud</label><select class="i" id="rSel"><option value="">— tanlang —</option>${regionOptions(region)}</select>
+    <label class="f" for="lSel">Til</label><select class="i" id="lSel"><option value="">— tanlang —</option><option value="uz" ${lang === 'uz' ? 'selected' : ''}>O‘zbekcha</option><option value="en" ${lang === 'en' ? 'selected' : ''}>Inglizcha</option></select>
+    ${sure ? '' : `<label class="check"><input type="checkbox" id="ok"> <span>Loyiha, hudud va tilni o‘zim tekshirdim — bu video Unutilgan Ruhlar loyihasiga tegishli.</span></label>`}
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="save">Saqlash</button></div></div>`;
+  $('#save').onclick = async () => {
+    const reg = $('#rSel').value, lg = $('#lSel').value;
+    if (!reg || !lg) return toast('Hudud va tilni tanlang.', true);
+    if (prePlat && prePlat !== c.platform) return toast('Platforma mos emas — boshqa joyni tanlang.', true);
+    if (!sure && !$('#ok').checked) return toast('Avval belgilash katagini tasdiqlang.', true);
+    const slot = `${reg}|${c.platform}|${lg}`;
+    const save = (replace) => api('/fs/video', { slot, url: c.url, replace });
+    closeDlg();
+    await act(async () => {
+      try { return await save(false); } catch (e) {
+        if (e.code !== 'NEEDS_CONFIRM') throw e;
+        if (!(await confirmDlg('Bu joyda boshqa video bor. Uni yangisiga almashtirasizmi? Eski videoning izohlari hisobdan chiqariladi.', 'Almashtirish'))) return null;
+        return save(true);
+      }
+    }, (r) => (r ? (r.sync?.error ? 'Saqlandi. Statistika: ' + r.sync.error : 'Video saqlandi va statistikasi olindi.') : 'Bekor qilindi.'));
+    openRegion = reg; fsView = 'regions'; render();
+  };
+}
+
+// ---------- Video qo‘shish (Skyline) ----------
+function addSkyDialog() {
+  if (!needAdmin()) return;
+  const next = S.sky.videos.reduce((m, v) => Math.max(m, v.day), 0) + 1;
+  openDlg(`<h3>Video qo‘shish — Regional Skyline</h3>
+    <p class="muted">Bu video faqat Skyline hisobida ishlatiladi.</p>
+    <label class="f" for="sU">Video havolasi</label><input class="i" id="sU" inputmode="url" placeholder="https://www.instagram.com/reel/…">
+    <label class="f" for="sD">Kun raqami</label><input class="i" id="sD" inputmode="numeric" value="${next}">
+    <div id="sRes"></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="sOk">Tekshirish va qo‘shish</button><button class="btn" id="sNo">Bekor qilish</button></div>`);
+  $('#sNo').onclick = closeDlg;
+  $('#sOk').onclick = async () => {
+    const url = $('#sU').value.trim(), day = $('#sD').value.trim();
+    if (!url) return toast('Havolani kiriting.', true);
+    $('#sRes').innerHTML = '<p class="muted" style="margin-top:10px"><span class="spin"></span> Tekshirilmoqda…</p>';
+    try {
+      const c = await api('/classify', { url });
+      if (c.project === 'fs') {
+        $('#sRes').innerHTML = '';
+        if (!(await confirmDlg('Bu video tavsifida “Unutilgan Ruhlar / Forgotten Spirits” nomi bor. Baribir Skyline’ga qo‘shasizmi?', 'Ha, Skyline’ga', false))) return;
+      } else closeDlg();
+      closeDlg();
+      await act(() => api('/sky/video', { url: c.url, day }), (r) => `${r.video.day}-kun videosi qo‘shildi.${r.video.error ? ' Ogohlantirish: ' + r.video.error : ''}`);
+    } catch (e) { $('#sRes').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  };
+}
+
+// ---------- Hodisalar ----------
+function bind() {
+  const v = $('#view');
+  v.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => go(b.dataset.go)));
+  v.querySelectorAll('[data-fsview]').forEach((b) => (b.onclick = () => { fsView = b.dataset.fsview; render(); }));
+  v.querySelectorAll('[data-toggle]').forEach((b) => (b.onclick = () => { openRegion = openRegion === b.dataset.toggle ? null : b.dataset.toggle; render(); }));
+  v.querySelectorAll('[data-addslot]').forEach((b) => (b.onclick = () => addFsDialog(b.dataset.addslot)));
+  v.querySelectorAll('[data-rmslot]').forEach((b) => (b.onclick = async () => {
+    if (!needAdmin()) return;
+    if (await confirmDlg('Video o‘chirilsinmi? Uning like’lari va izohlaridan olingan eslatmalar hisobdan chiqariladi.', 'O‘chirish'))
+      act(() => api('/fs/video/remove', { slot: b.dataset.rmslot }), (r) => `O‘chirildi (${r.removedComments} izoh hisobdan chiqdi).`);
+  }));
+  v.querySelectorAll('[data-manual]').forEach((b) => (b.onclick = async () => {
+    if (!needAdmin()) return;
+    const n = await numberDlg('Qo‘lda like', 'API like sonini bera olmaganda shu qiymat ishlatiladi (masalan Instagram ulanmaganda). Bo‘sh qoldirsangiz o‘chiriladi.', b.dataset.cur, true);
+    if (n !== undefined) act(() => api('/fs/manual-likes', { slot: b.dataset.manual, likes: n }), 'Saqlandi.');
+  }));
+  v.querySelectorAll('[data-region][data-kind="mentions"]').forEach((li) => (li.onclick = () => showComments(li.dataset.region)));
+  v.querySelectorAll('[data-skycorr]').forEach((li) => (li.onclick = async () => {
+    if (!needAdmin()) return;
+    const n = await numberDlg('Balandlikni tuzatish (metr)', 'Izohlardan hisoblangan balandlikka qo‘shiladigan qiymat. Manfiy son ayiradi. 0 — tuzatishni olib tashlash.', li.dataset.cur);
+    if (n != null) act(() => api('/sky/correction', { region: li.dataset.skycorr, meters: n }), 'Tuzatish saqlandi.');
+  }));
+  v.querySelectorAll('[data-process]').forEach((b) => (b.onclick = async () => {
+    const done = b.dataset.done === 'true';
+    if (done && !(await confirmDlg('Video qayta tekshiriladi. Avval sanalgan izohlar qayta sanalmaydi — faqat yangi izohlar qo‘shiladi.', 'Tekshirish', false))) return;
+    act(() => api('/sky/process', { id: b.dataset.process, force: done }), (r) => `${r.processed} ta video: ${r.newComments} yangi izoh, +${r.meters} m.${r.errors.length ? ' ' + r.errors[0] : ''}`);
+  }));
+  v.querySelectorAll('[data-skyday]').forEach((b) => (b.onclick = async () => {
+    if (!needAdmin()) return;
+    const n = await numberDlg('Kun raqami', 'Videoning nechanchi kun ekanini kiriting.', b.dataset.cur);
+    if (n != null) act(() => api('/sky/video/edit', { id: b.dataset.skyday, day: n }), 'Saqlandi.');
+  }));
+  v.querySelectorAll('[data-skyrm]').forEach((b) => (b.onclick = async () => {
+    if (!needAdmin()) return;
+    if (await confirmDlg('Video o‘chirilsinmi? Undan qo‘shilgan metrlar ham ayiriladi.', 'O‘chirish'))
+      act(() => api('/sky/video/remove', { id: b.dataset.skyrm }), (r) => `O‘chirildi (${r.removedComments} izoh ayirildi).`);
+  }));
+  v.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => actions[b.dataset.act]?.()));
+}
+
+const actions = {
+  addFs: () => addFsDialog(null),
+  addSky: addSkyDialog,
+  syncFs: () => act(() => api('/fs/sync', {}), (r) => `${r.updated} ta video yangilandi, ${r.newComments} yangi izoh.`),
+  syncSky: () => act(() => api('/sky/sync', {}), (r) => r.skipped ? 'Hisoblash o‘chirilgan.' : `${r.processed} ta video hisoblandi, +${r.meters} m.`),
+  syncAll: () => act(async () => {
+    const a = await api('/fs/sync', {});
+    const b = await api('/sky/sync', {}).catch((e) => ({ error: e.message }));
+    return { a, b };
+  }, ({ a, b }) => `Unutilgan Ruhlar: ${a.updated} video yangilandi.${b.processed ? ` Skyline: +${b.meters} m.` : ''}`),
+  skyActive: async () => {
+    if (!needAdmin()) return;
+    const on = !S.sky.active;
+    if (on && !(await confirmDlg('Kunlik hisoblash yoqilsinmi? Shundan keyin tayyor videolar har soatda avtomatik hisoblanadi.', 'Yoqish', false))) return;
+    act(() => api('/sky/active', { active: on }), on ? 'Hisoblash yoqildi.' : 'Hisoblash to‘xtatildi.');
+  },
+  saveAdmin: async () => {
+    const val = $('#admIn').value;
+    if (!val) return toast('Parolni kiriting.', true);
+    localStorage.setItem('uzp-admin', val);
+    try { await api('/login', {}); toast('Kirildi.'); render(); }
+    catch (e) { localStorage.removeItem('uzp-admin'); toast(e.message, true); render(); }
+  },
+  logout: () => { localStorage.removeItem('uzp-admin'); toast('Chiqildi.'); render(); },
+  igConnect: () => {
+    const token = $('#igIn').value.trim();
+    if (!token) return toast('Tokenni kiriting.', true);
+    act(() => api('/instagram/connect', { token }), (r) => `Instagram ulandi${r.username ? ': @' + r.username : ''}.`);
+  },
+  igRefresh: () => act(() => api('/instagram/refresh', {}), 'Token yangilandi.'),
+  igOff: async () => { if (await confirmDlg('Instagram ulanishi uzilsinmi?', 'Uzish')) act(() => api('/instagram/disconnect', {}), 'Uzildi.'); },
+};
+
+async function showComments(region) {
+  const name = S.regions.find((r) => r.id === region)?.name || '';
+  const reg = S.fs.regions.find((r) => r.id === region);
+  openDlg(`<h3>${esc(name)} — izohlar</h3><p class="muted"><span class="spin"></span> Yuklanmoqda…</p>`);
+  try {
+    const { comments } = await api('/fs/comments?region=' + encodeURIComponent(region));
+    openDlg(`<h3>${esc(name)} — ${fmt(reg.mentions)} eslatma</h3>
+      <p class="muted">Izohlardan: ${fmt(reg.mentionsCounted)}${reg.mentionCorrection ? `, qo‘lda tuzatish: ${reg.mentionCorrection > 0 ? '+' : ''}${reg.mentionCorrection}` : ''}. Oxirgi ${comments.length} ta izoh:</p>
+      ${comments.map((c) => `<div class="cmt">${esc(c.text)}<small>${c.video.startsWith('yt') ? 'YouTube' : 'Instagram'}${c.at ? ' · ' + esc(new Date(c.at).toLocaleDateString('uz-UZ')) : ''}</small></div>`).join('') || '<p class="muted">Hali izoh yo‘q.</p>'}
+      <div class="row" style="margin-top:14px"><button class="btn" id="corr">Qo‘lda tuzatish</button><button class="btn primary" id="cls">Yopish</button></div>`);
+    $('#cls').onclick = closeDlg;
+    $('#corr').onclick = async () => {
+      closeDlg();
+      if (!needAdmin()) return;
+      const n = await numberDlg('Eslatmalarni tuzatish', 'Izohlardan hisoblangan songa qo‘shiladigan qiymat. Manfiy son ayiradi. 0 — tuzatishni olib tashlash.', reg.mentionCorrection);
+      if (n != null) act(() => api('/fs/correction', { region, mentions: n }), 'Tuzatish saqlandi.');
+    };
+  } catch (e) { openDlg(`<p class="err">${esc(e.message)}</p><button class="btn" onclick="closeDlg()">Yopish</button>`); }
+}
+
+load();
+setInterval(() => { if (!document.hidden && !busy && !dlg.open) load(true); }, 60000);
+</script>
+</body>
+</html>
