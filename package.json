@@ -1,0 +1,16 @@
+{
+  "name": "uz-projects",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "UZ PROJECTS — Unutilgan Ruhlar va Regional Skyline statistikasi",
+  "scripts": {
+    "test": "node tests/run.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
