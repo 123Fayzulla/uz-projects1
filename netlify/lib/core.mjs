@@ -666,6 +666,7 @@ export async function skyRemoveVideo(ctx, id) {
 }
 
 export async function skySetCorrection(ctx, region, meters) {
+  if (region === 'toshkent') region = 'toshkent_v';
   if (!REGION_IDS.includes(region)) throw E('BAD_INPUT', 'Hudud noto‘g‘ri.');
   const sky = await loadSky(ctx);
   sky.corrections[region] = toInt(meters, -1e7, 1e7);
@@ -756,12 +757,30 @@ export async function syncSky(ctx, { budgetMs = 8500, id = null, force = false }
   });
 }
 
+// Skyline uchun: Toshkent viloyati va Toshkent shahri bitta "Toshkent" hududi sifatida sanaladi.
+// Bu faqat Skyline’ga tegishli; Unutilgan Ruhlar hisobi o‘zgarmaydi.
+export const skyKey = (r) => (r === 'toshkent_v' || r === 'toshkent_sh' ? 'toshkent' : r);
+export const skyCommentKeys = (c) => [...new Set((c.r || []).map(skyKey))];
+export const SKY_REGIONS = (() => {
+  const out = []; const seen = new Set();
+  for (const r of REGIONS) {
+    const id = skyKey(r.id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, name: id === 'toshkent' ? 'Toshkent' : r.name });
+  }
+  return out;
+})();
+
 export function skySummary(sky, now) {
-  const m = Object.fromEntries(REGION_IDS.map((id) => [id, 0]));
-  for (const c of Object.values(sky.comments)) for (const r of c.r || []) if (r in m) m[r]++;
-  const regions = REGIONS.map((r) => ({
-    id: r.id, name: r.name, fromComments: m[r.id], correction: sky.corrections[r.id] || 0,
-    meters: m[r.id] + (sky.corrections[r.id] || 0),
+  const m = {};
+  for (const c of Object.values(sky.comments)) for (const k of skyCommentKeys(c)) m[k] = (m[k] || 0) + 1;
+  const corr = (k) => (k === 'toshkent'
+    ? (sky.corrections.toshkent_v || 0) + (sky.corrections.toshkent_sh || 0)
+    : (sky.corrections[k] || 0));
+  const regions = SKY_REGIONS.map((r) => ({
+    id: r.id, name: r.name, fromComments: m[r.id] || 0, correction: corr(r.id),
+    meters: (m[r.id] || 0) + corr(r.id),
   }));
   return {
     active: !!sky.active,
@@ -810,15 +829,15 @@ export async function scheduledRun(ctx) {
 
 export { saveStatus };
 
-/** Har bir hudud uchun bitta egasi: shu hudud haqidagi eng ko‘p like olgan izoh muallifi. */
+/** Har bir Skyline hududi uchun bitta egasi: shu hudud haqidagi eng ko‘p like olgan izoh muallifi. */
 export function skyOwners(sky) {
   const best = {};
   for (const c of Object.values(sky.comments || {})) {
-    for (const r of c.r || []) {
+    for (const r of skyCommentKeys(c)) {
       const cur = best[r];
       const better = !cur || (c.l || 0) > cur.likes || ((c.l || 0) === cur.likes && String(c.at) < String(cur.at));
       if (better) best[r] = { name: c.a || '—', likes: c.l || 0, text: c.t, at: c.at, video: c.vid };
     }
   }
-  return REGIONS.map((reg) => ({ id: reg.id, name: reg.name, owner: best[reg.id] || null }));
+  return SKY_REGIONS.map((r) => ({ id: r.id, name: r.name, owner: best[r.id] || null }));
 }
