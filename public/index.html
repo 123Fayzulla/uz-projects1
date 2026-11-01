@@ -347,6 +347,14 @@ function slotCard(r, p, l) {
       <button class="btn small danger" data-rmslot="${slot}">O‘chirish</button></div></div>`;
 }
 
+function ownersCard(sky) {
+  const rows = (sky.owners || []).map((o) => `<div class="vid"><div style="flex:1;min-width:0"><b>${esc(o.name)}</b>
+    <div class="muted" style="font-size:13px">${o.owner ? esc(o.owner.name) + ' · ' + fmt(o.owner.likes) + ' ♥' : 'hali yo‘q'}</div>
+    ${o.owner ? `<div class="cmt" style="border:0;padding:4px 0 0">${esc(o.owner.text)}</div>` : ''}</div></div>`).join('');
+  return `<div class="card"><h3>Hududlar egalari (eng ko‘p like)</h3>
+    <p class="muted" style="font-size:13px">Har bir hudud uchun bitta odam. Yangi izoh ko‘proq like olsa, egasi almashadi.</p>${rows}</div>`;
+}
+
 function viewSky() {
   const sky = S.sky;
   const max = Math.max(1, ...sky.regions.map((r) => r.meters));
@@ -371,6 +379,7 @@ function viewSky() {
   <div class="card"><h3>Hududlar balandligi</h3><p class="muted">Qo‘lda tuzatish uchun hududni bosing.</p>
     <ul class="rank">${[...sky.regions].sort((a, b) => b.meters - a.meters).map((r, i) => `<li data-skycorr="${r.id}" data-cur="${r.correction}">
       <span class="n">${i + 1}</span><div>${esc(r.name)}${r.correction ? ` <span class="badge warn">tuzatish ${r.correction > 0 ? '+' : ''}${r.correction} m</span>` : ''}</div><span class="v">${fmt(r.meters)} m</span></li>`).join('')}</ul></div>
+  ${ownersCard(sky)}
   <div class="card"><h3>Kunlik videolar</h3>
     ${sky.videos.length ? sky.videos.map((v) => `<div class="vid"><div class="day">${v.day}<small class="muted" style="font-size:11px;display:block;font-weight:500">-kun</small></div>
       <div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.title || v.url)}</div>
