@@ -1,126 +1,136 @@
-// UZ PROJECTS — Regional Skyline: soatlik, bo‘laklab o‘qiydigan hisoblash.
-// Har bir yurishda har bir video uchun cheklangan vaqt ichida izohlar o‘qiladi.
-// Tarixiy izohlar (backfill) bir necha soat davomida to‘liq yig‘iladi, keyin faqat yangilari olinadi.
-import { matchRegions } from './regions.mjs';
-import { KEYS, loadSky, ytGet, igFetch, igUrl, getIgToken, igFindMedia, AppError } from './core.mjs';
+// UZ PROJECTS — Regional Skyline (v2).
+// Har yurishda: 1) yangi izohlar, 2) har hudud top-5 izohlari like’i yangilanadi,
+// 3) izohlarning bir qismi (ROT_PAGES) navbat bilan qayta o‘qiladi.
+// Chaqiruvlar soni MAX_CALLS bilan cheklanadi (Instagram so‘rov limiti uchun).
+import { REGIONS, REGION_IDS, matchRegions } from './regions.mjs';
+import { KEYS, loadSky, igFetch, igUrl, getIgToken, igFindMedia, AppError } from './core.mjs';
 
-async function fetchYtPage(ctx, videoId, pageToken) {
-  const j = await ytGet(ctx, 'commentThreads', {
-    part: 'snippet', videoId, maxResults: 100, order: 'time', textFormat: 'plainText', pageToken,
-  });
-  const items = (j.items || []).map((th) => {
-    const c = th.snippet?.topLevelComment;
-    if (!c) return null;
-    const s = c.snippet || {};
-    return {
-      id: c.id,
-      text: s.textOriginal || s.textDisplay || '',
-      like: Number(s.likeCount || 0),
-      author: s.authorDisplayName || '—',
-      at: s.publishedAt || null,
-    };
-  }).filter(Boolean);
-  return { items, next: j.nextPageToken || null };
-}
+const MAX_CALLS = 600;   // bir yurishda umumiy so‘rovlar chegarasi
+const NEW_PAGES = 10;     // yangi izohlar uchun eng ko‘pi bilan sahifalar
+const ROT_PAGES = 40;    // navbatdagi qayta o‘qish: 40 sahifa = 2 000 izoh
+const TOP_PER_REGION = 5;
 
-async function fetchIgPage(ctx, mediaId, next) {
+async function fetchPage(ctx, mediaId, next) {
   let j;
-  if (next) {
-    j = await igFetch(ctx, next);
-  } else {
+  if (next) j = await igFetch(ctx, next);
+  else {
     const tk = await getIgToken(ctx);
     if (!tk) throw new AppError('IG_NOT_CONNECTED', 'Instagram ulanmagan.', 503);
     j = await igFetch(ctx, igUrl(ctx, tk.mode, `${mediaId}/comments`,
       { fields: 'id,text,timestamp,like_count,username', limit: 50 }, tk.token));
   }
   const items = (j.data || []).map((c) => ({
-    id: c.id,
-    text: c.text || '',
-    like: Number(c.like_count || 0),
-    author: c.username || '—',
-    at: c.timestamp || null,
+    id: c.id, text: c.text || '', like: Number(c.like_count || 0), author: c.username || '—', at: c.timestamp || null,
   }));
   return { items, next: j.paging?.next || null };
 }
 
-/**
- * Bir yurish. budgetMs ichida barcha Skyline videolarini tekshiradi.
- * Yangi izohlar sky.comments ga qo‘shiladi (ID bo‘yicha takrorlanmaydi).
- */
-export async function skyStep(ctx, { budgetMs = 18000 } = {}) {
+async function fetchOne(ctx, commentId) {
+  const tk = await getIgToken(ctx);
+  const j = await igFetch(ctx, igUrl(ctx, tk.mode, commentId,
+    { fields: 'id,text,timestamp,like_count,username' }, tk.token));
+  return { text: j.text, like: Number(j.like_count || 0), author: j.username || '—', at: j.timestamp || null };
+}
+
+export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   const deadline = ctx.now() + budgetMs;
-  const sky0 = await loadSky(ctx);
-  if (!sky0.active) return { skipped: 'inactive' };
+  const sky = await loadSky(ctx);
+  if (!sky.active) return { skipped: 'inactive' };
+  if (!(await getIgToken(ctx))) return { skipped: 'no-token' };
 
-  const newC = {};
-  const updates = {};
+  let calls = 0;
+  let added = 0, refreshed = 0, rotated = 0;
   const errors = [];
-  let scanned = 0;
-  let videosDone = 0;
-  let partial = false;
+  const canCall = () => calls < MAX_CALLS && ctx.now() < deadline;
+  const upsert = (key, c, vid) => {
+    const cur = sky.comments[key];
+    if (!cur) {
+      sky.comments[key] = { r: matchRegions(c.text), t: c.text.slice(0, 200), l: c.like, a: c.author, at: c.at, vid };
+      return 'added';
+    }
+    cur.l = c.like; cur.a = c.author; cur.t = c.text.slice(0, 200); cur.r = matchRegions(c.text);
+    return 'updated';
+  };
 
-  for (const v of sky0.videos) {
-    if (ctx.now() > deadline) { partial = true; break; }
+  // 1) Har bir video: yangi izohlar va navbatdagi qayta o‘qish
+  for (const v of sky.videos) {
+    if (!canCall()) break;
     try {
-      if (v.platform === 'ig' && !v.mediaId) v.mediaId = (await igFindMedia(ctx, v.extId)).mediaId;
-      const backfilling = !v.backfillDone;
-      let token = backfilling ? (v.cursor || null) : null;
-      let finished = false;
-      let pages = 0;
-      while (ctx.now() < deadline && pages < 80) {
-        const page = v.platform === 'yt'
-          ? await fetchYtPage(ctx, v.extId, token)
-          : await fetchIgPage(ctx, v.mediaId, token);
-        pages++;
-        let fresh = 0;
-        for (const c of page.items) {
-          const key = `${v.platform}:${c.id}`;
-          if (sky0.comments[key] || newC[key]) continue;
-          newC[key] = { r: matchRegions(c.text), t: c.text.slice(0, 200), l: c.like, a: c.author, at: c.at, vid: v.id };
-          fresh++;
+      if (v.platform !== 'ig') continue; // Skyline — faqat Instagram
+      if (!v.mediaId) { calls++; v.mediaId = (await igFindMedia(ctx, v.extId)).mediaId; }
+
+      if (!v.backfillDone) {
+        // Tarixiy izohlar: bo‘laklab, qayerda to‘xtasa shu yerdan davom etadi
+        let token = v.cursor || null;
+        while (canCall()) {
+          const p = await fetchPage(ctx, v.mediaId, token); calls++;
+          for (const c of p.items) if (!sky.comments[`ig:${c.id}`]) { upsert(`ig:${c.id}`, c, v.id); added++; }
+          token = p.next;
+          if (!token) { v.backfillDone = true; v.cursor = null; break; }
+          v.cursor = token;
         }
-        scanned += page.items.length;
-        token = page.next;
-        if (!token) { finished = true; break; }
-        // Tarix to‘liq yig‘ilgach: yangi izoh chiqmagan sahifada to‘xtaymiz
-        if (!backfilling && fresh === 0) { finished = true; break; }
+        continue;
       }
-      updates[v.id] = {
-        backfillDone: backfilling ? finished : true,
-        cursor: backfilling && !finished ? token : null,
-        mediaId: v.mediaId || null,
-        error: null,
-        note: null,
-        lastScan: ctx.now(),
-      };
-      if (finished || !backfilling) videosDone++;
+
+      // Yangi izohlar: eng oxirgi sahifalardan, yangi topilmasa to‘xtaydi
+      let token = null;
+      for (let i = 0; i < NEW_PAGES && canCall(); i++) {
+        const p = await fetchPage(ctx, v.mediaId, token); calls++;
+        let fresh = 0;
+        for (const c of p.items) {
+          if (sky.comments[`ig:${c.id}`]) continue;
+          upsert(`ig:${c.id}`, c, v.id); fresh++; added++;
+        }
+        token = p.next;
+        if (!token || fresh === 0) break;
+      }
+
+      // Navbatdagi qayta o‘qish (like va matn yangilanadi)
+      let rot = v.rotNext || null;
+      for (let i = 0; i < ROT_PAGES && canCall(); i++) {
+        const p = await fetchPage(ctx, v.mediaId, rot); calls++;
+        for (const c of p.items) {
+          if (sky.comments[`ig:${c.id}`]) { upsert(`ig:${c.id}`, c, v.id); rotated++; }
+          else { upsert(`ig:${c.id}`, c, v.id); added++; }
+        }
+        rot = p.next;
+        if (!rot) break;
+      }
+      v.rotNext = rot || null;
+      v.error = null;
+      v.lastScan = ctx.now();
     } catch (e) {
-      if (e.code === 'COMMENTS_DISABLED') {
-        updates[v.id] = { backfillDone: true, cursor: null, error: null, note: e.message, lastScan: ctx.now() };
-      } else {
-        updates[v.id] = { error: e.message, lastScan: ctx.now() };
-        errors.push(`${v.day}-kun: ${e.message}`);
-      }
+      v.error = e.message;
+      errors.push(`${v.day}-kun: ${e.message}`);
+      if (e.code === 'IG_RATE' || e.code === 'IG_TOKEN') break;
     }
   }
 
-  // Saqlashdan oldin eng so‘nggi holatni o‘qib, birlashtiramiz
-  const fresh = await loadSky(ctx);
-  for (const [id, u] of Object.entries(updates)) {
-    const f = fresh.videos.find((x) => x.id === id);
-    if (f) Object.assign(f, u);
+  // 2) Har hudud uchun eng yuqori like olgan izohlar — like’ini alohida yangilash
+  const keys = new Set();
+  for (const reg of REGION_IDS) {
+    Object.entries(sky.comments)
+      .filter(([, c]) => (c.r || []).includes(reg))
+      .sort((a, b) => (b[1].l || 0) - (a[1].l || 0))
+      .slice(0, TOP_PER_REGION)
+      .forEach(([k]) => keys.add(k));
   }
-  const liveIds = new Set(fresh.videos.map((x) => x.id));
-  let added = 0;
-  for (const [k, c] of Object.entries(newC)) {
-    if (!fresh.comments[k] && liveIds.has(c.vid)) { fresh.comments[k] = c; added++; }
+  for (const k of keys) {
+    if (!canCall()) break;
+    const id = k.slice(3);
+    try {
+      const c = await fetchOne(ctx, id); calls++;
+      upsert(k, c, sky.comments[k].vid); refreshed++;
+    } catch (e) {
+      errors.push(`izoh ${id}: ${e.message}`);
+      if (e.code === 'IG_RATE' || e.code === 'IG_TOKEN') break;
+    }
   }
+
   const at = ctx.now();
-  fresh.lastSync = at;
-  fresh.lastResult = { at, processed: videosDone, meters: added, newComments: added, scanned, failed: errors.length, errors, partial };
-  if (added) {
-    fresh.history = [{ at, type: 'scan', text: `Yangilash: ${added} ta yangi izoh o‘qildi` }, ...fresh.history].slice(0, 300);
-  }
-  await ctx.store.set(KEYS.sky, fresh);
-  return fresh.lastResult;
+  sky.lastSync = at;
+  sky.lastResult = { at, processed: sky.videos.length, meters: added, newComments: added, refreshed, rotated, calls, failed: errors.length, errors, partial: calls >= MAX_CALLS };
+  sky.history = [{ at, type: 'scan', text: `Yangilash: +${added} yangi, ${refreshed} top izoh yangilandi, ${rotated} izoh qayta o‘qildi` }, ...(sky.history || [])].slice(0, 300);
+  await ctx.store.set(KEYS.sky, sky);
+  return sky.lastResult;
 }
