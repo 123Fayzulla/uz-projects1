@@ -90,15 +90,15 @@ dialog::backdrop{background:#050912cc}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
 /* Skyline — 14 ta minora */
-.skyline{position:relative;height:260px;display:flex;align-items:flex-end;gap:4px;padding:28px 2px 0;border-bottom:2px solid var(--line);
+.skyline{position:relative;height:340px;display:flex;align-items:flex-end;gap:2px;padding:28px 0 0;border-bottom:2px solid var(--line);
   background:linear-gradient(180deg,#0d1424 0%,#14203a 100%);border-radius:14px 14px 0 0;overflow:hidden}
-.tower{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.tower{flex:1 1 0;min-width:0;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
 .tower i{display:block;width:100%;min-height:3px;border-radius:4px 4px 0 0;
   background:repeating-linear-gradient(180deg,#2c8fa0 0 6px,#246f80 6px 8px);transition:height .6s ease}
 .tower.top i{background:repeating-linear-gradient(180deg,var(--gold) 0 6px,#b98d3c 6px 8px)}
-.tower b{font-size:10.5px;font-variant-numeric:tabular-nums;margin-bottom:3px}
-.towerlabels{display:flex;gap:4px;padding:6px 2px 0}
-.towerlabels span{flex:1;font-size:9.5px;color:var(--muted);text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);height:78px;white-space:nowrap}
+.tower b{font-size:11px;font-variant-numeric:tabular-nums;margin-bottom:3px}
+.towerlabels{display:flex;gap:2px;padding:6px 0 0}
+.towerlabels span{flex:1 1 0;min-width:0;overflow:hidden;font-size:11px;color:var(--muted);text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);height:78px;white-space:nowrap}
 .vid{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
 .vid:last-child{border-bottom:0}
 .day{font-weight:800;font-size:20px;min-width:44px}
