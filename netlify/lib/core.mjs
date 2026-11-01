@@ -782,10 +782,19 @@ export function skySummary(sky, now) {
     id: r.id, name: r.name, fromComments: m[r.id] || 0, correction: corr(r.id),
     meters: (m[r.id] || 0) + corr(r.id),
   }));
+  const countsByVid = {};
+  for (const c of Object.values(sky.comments)) if (c.vid) countsByVid[c.vid] = (countsByVid[c.vid] || 0) + 1;
   return {
     active: !!sky.active,
     regions,
-    videos: sky.videos.map((v) => ({ ...v, due: skyIsDue(sky, v, now) })),
+    videos: sky.videos.map((v) => ({
+      ...v,
+      due: skyIsDue(sky, v, now),
+      // Haqiqiy son: shu videoga saqlangan izohlar (eski hisoblash o‘rniga)
+      counted: countsByVid[v.id] || 0,
+      stored: countsByVid[v.id] || 0,
+      status: v.backfillDone ? 'processed' : 'waiting',
+    })),
     history: sky.history.slice(0, 60),
     totals: { meters: regions.reduce((a, r) => a + r.meters, 0), comments: Object.keys(sky.comments).length, videos: sky.videos.length },
     lastSync: sky.lastSync, lastResult: sky.lastResult,
