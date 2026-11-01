@@ -1,6 +1,7 @@
 // UZ PROJECTS — asosiy API (Netlify Functions v2). Barcha kalitlar faqat serverda.
 import crypto from 'node:crypto';
 import * as core from '../lib/core.mjs';
+import { skyStep } from '../lib/skyline.mjs';
 
 export function makeCtx(store, env = process.env) {
   return { store, env, fetch: (...a) => fetch(...a), now: () => Date.now() };
@@ -52,8 +53,8 @@ export async function route(req, ctx) {
     case '/sky/video': return json({ video: await core.skyAddVideo(ctx, body) });
     case '/sky/video/edit': await core.skyEditVideo(ctx, body.id, body); return json({ ok: true });
     case '/sky/video/remove': return json(await core.skyRemoveVideo(ctx, body.id));
-    case '/sky/process': return json(await core.syncSky(ctx, { id: body.id, force: !!body.force, budgetMs: 8500 }));
-    case '/sky/sync': return json(await core.syncSky(ctx, { budgetMs: 8500 }));
+    case '/sky/process': return json(await skyStep(ctx, { budgetMs: 8500 }));
+    case '/sky/sync': return json(await skyStep(ctx, { budgetMs: 8500 }));
     case '/sky/correction': await core.skySetCorrection(ctx, body.region, body.meters); return json({ ok: true });
     case '/instagram/connect': return json(await core.igConnect(ctx, body.token));
     case '/instagram/disconnect': await core.igDisconnect(ctx); return json({ ok: true });
