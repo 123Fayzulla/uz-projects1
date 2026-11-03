@@ -374,6 +374,7 @@ function viewSky() {
     <button class="btn primary" data-act="addSky">＋ Video qo‘shish</button>
     <button class="btn" data-act="skyActive">${sky.active ? 'Hisoblashni to‘xtatish' : 'Hisoblashni boshlash'}</button>
     ${sky.active ? `<button class="btn" data-act="syncSky" ${busy ? 'disabled' : ''}>↻ Tayyorlarini hisoblash</button>` : ''}
+    ${sky.active ? `<button class="btn" data-act="refreshOld" ${busy ? 'disabled' : ''}>↻ Eski izohlarni yangilash</button>` : ''}
   </div>
   ${syncResultNote(sky.lastResult, 'sky')}
   <div class="card"><h3>Hududlar balandligi</h3><p class="muted">Qo‘lda tuzatish uchun hududni bosing.</p>
@@ -567,6 +568,7 @@ const actions = {
   addFs: () => addFsDialog(null),
   addSky: addSkyDialog,
   syncFs: () => act(() => api('/fs/sync', {}), (r) => `${r.updated} ta video yangilandi, ${r.newComments} yangi izoh.`),
+  refreshOld: () => act(() => api('/sky/refresh-old', {}), (r) => r.queued ? (r.note || 'Eski izohlar fonda yangilanmoqda.') : 'Boshlanmadi: ' + (r.error || r.status)),
   syncSky: () => act(() => api('/sky/sync', {}), (r) => r.queued ? (r.note || 'Hisoblash fonda boshlandi.') : 'Hisoblash boshlanmadi: ' + (r.error || r.status)),
   syncAll: () => act(async () => {
     const a = await api('/fs/sync', {});
