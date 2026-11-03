@@ -32,7 +32,7 @@ async function fetchOne(ctx, commentId) {
   return { text: j.text, like: Number(j.like_count || 0), author: j.username || '—', at: j.timestamp || null };
 }
 
-export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
+export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000, mode = 'all' } = {}) {
   const deadline = ctx.now() + budgetMs;
   const sky = await loadSky(ctx);
   if (!sky.active) return { skipped: 'inactive' };
@@ -85,7 +85,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
 
       // Yangi izohlar: eng oxirgi sahifalardan, yangi topilmasa to‘xtaydi
       let token = null;
-      for (let i = 0; i < NEW_PAGES && vcan(); i++) {
+      for (let i = 0; i < NEW_PAGES && vcan() && mode !== 'old'; i++) {
         const p = await fetchPage(ctx, v.mediaId, token); calls++;
         let fresh = 0;
         for (const c of p.items) {
