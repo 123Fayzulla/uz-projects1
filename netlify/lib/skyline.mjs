@@ -5,7 +5,7 @@
 import { REGIONS, REGION_IDS, matchRegions } from './regions.mjs';
 import { KEYS, loadSky, igFetch, igUrl, getIgToken, igFindMedia, AppError } from './core.mjs';
 
-const MAX_CALLS = 600;   // bir yurishda umumiy so‘rovlar chegarasi
+const MAX_CALLS = 1000;  // bir yurishda umumiy so‘rovlar (imkon qadar ko‘p)   // bir yurishda umumiy so‘rovlar chegarasi
 const NEW_PAGES = 10;     // yangi izohlar uchun eng ko‘pi bilan sahifalar
 const ROT_PAGES = 40;    // navbatdagi qayta o‘qish: 40 sahifa = 2 000 izoh
 const TOP_PER_REGION = 5;
@@ -41,7 +41,15 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   let calls = 0;
   let added = 0, refreshed = 0, rotated = 0;
   const errors = [];
+  let vidLimit = MAX_CALLS;
   const canCall = () => calls < MAX_CALLS && ctx.now() < deadline;
+  const vcan = () => calls < vidLimit && canCall();
+  // Har bir videoga teng ulush; boshlang‘ich video har yurishda almashadi (navbat)
+  const igVids = sky.videos.filter((v) => v.platform === 'ig');
+  const share = Math.max(20, Math.floor(MAX_CALLS / Math.max(1, igVids.length)));
+  const startAt = (sky.rr || 0) % Math.max(1, igVids.length);
+  const order = [...igVids.slice(startAt), ...igVids.slice(0, startAt)];
+  sky.rr = (startAt + 1) % Math.max(1, igVids.length);
   const upsert = (key, c, vid) => {
     const cur = sky.comments[key];
     if (!cur) {
@@ -53,8 +61,10 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   };
 
   // 1) Har bir video: yangi izohlar va navbatdagi qayta o‘qish
-  for (const v of sky.videos) {
+  // 1-o‘tish: har bir videoga teng ulush. 2-o‘tish: qolgan barcha so‘rovlar ishlatiladi.
+  for (const pass of [1, 2]) for (const v of order) {
     if (!canCall()) break;
+    vidLimit = pass === 1 ? calls + share : MAX_CALLS;
     try {
       if (v.platform !== 'ig') continue; // Skyline — faqat Instagram
       if (!v.mediaId) { calls++; v.mediaId = (await igFindMedia(ctx, v.extId)).mediaId; }
@@ -62,7 +72,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
       if (!v.backfillDone) {
         // Tarixiy izohlar: bo‘laklab, qayerda to‘xtasa shu yerdan davom etadi
         let token = v.cursor || null;
-        while (canCall()) {
+        while (vcan()) {
           const p = await fetchPage(ctx, v.mediaId, token); calls++;
           for (const c of p.items) if (!sky.comments[`ig:${c.id}`]) { upsert(`ig:${c.id}`, c, v.id); added++; }
           token = p.next;
@@ -74,7 +84,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
 
       // Yangi izohlar: eng oxirgi sahifalardan, yangi topilmasa to‘xtaydi
       let token = null;
-      for (let i = 0; i < NEW_PAGES && canCall(); i++) {
+      for (let i = 0; i < NEW_PAGES && vcan(); i++) {
         const p = await fetchPage(ctx, v.mediaId, token); calls++;
         let fresh = 0;
         for (const c of p.items) {
@@ -87,7 +97,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
 
       // Navbatdagi qayta o‘qish (like va matn yangilanadi)
       let rot = v.rotNext || null;
-      for (let i = 0; i < ROT_PAGES && canCall(); i++) {
+      for (let i = 0; i < ROT_PAGES && vcan(); i++) {
         const p = await fetchPage(ctx, v.mediaId, rot); calls++;
         for (const c of p.items) {
           if (sky.comments[`ig:${c.id}`]) { upsert(`ig:${c.id}`, c, v.id); rotated++; }
@@ -107,6 +117,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   }
 
   // 2) Har hudud uchun eng yuqori like olgan izohlar — like’ini alohida yangilash
+  
   const keys = new Set();
   for (const reg of REGION_IDS) {
     Object.entries(sky.comments)
