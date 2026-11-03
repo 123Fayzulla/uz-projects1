@@ -53,6 +53,7 @@ export async function route(req, ctx) {
     case '/sky/video/edit': await core.skyEditVideo(ctx, body.id, body); return json({ ok: true });
     case '/sky/video/remove': return json(await core.skyRemoveVideo(ctx, body.id));
     case '/sky/process': return json(await queueSky(ctx));
+    case '/sky/refresh-old': return json(await queueSky(ctx, 'old'));
     case '/sky/sync': return json(await queueSky(ctx));
     case '/sky/correction': await core.skySetCorrection(ctx, body.region, body.meters); return json({ ok: true });
     case '/instagram/connect': return json(await core.igConnect(ctx, body.token));
@@ -63,10 +64,10 @@ export async function route(req, ctx) {
 }
 
 // Skyline og‘ir: tugma uni fon funksiyasiga (13 daqiqa) yuboradi, sahifa kutmaydi.
-async function queueSky(ctx) {
+async function queueSky(ctx, mode = 'all') {
   const base = ctx.env.URL;
   if (!base) return { queued: false, error: 'Netlify URL topilmadi' };
-  const r = await fetch(`${base}/.netlify/functions/skyline-background`, { method: 'POST' });
+  const r = await fetch(`${base}/.netlify/functions/skyline-background`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode }) });
   return { queued: r.status === 202 || r.ok, status: r.status, note: 'Hisoblash fonda ishlamoqda. 5–10 daqiqadan keyin sahifani yangilang.' };
 }
 
