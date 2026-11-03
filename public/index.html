@@ -548,7 +548,7 @@ function bind() {
   v.querySelectorAll('[data-process]').forEach((b) => (b.onclick = async () => {
     const done = b.dataset.done === 'true';
     if (done && !(await confirmDlg('Video qayta tekshiriladi. Avval sanalgan izohlar qayta sanalmaydi — faqat yangi izohlar qo‘shiladi.', 'Tekshirish', false))) return;
-    act(() => api('/sky/process', { id: b.dataset.process, force: done }), (r) => `${r.processed} ta video: ${r.newComments} yangi izoh, +${r.meters} m.${r.errors.length ? ' ' + r.errors[0] : ''}`);
+    act(() => api('/sky/process', { id: b.dataset.process, force: done }), (r) => `${r.processed} ta video: ${r.newComments} yangi izoh, +${r.meters} m.${r.errors && r.errors.length ? ' ' + r.errors[0] : ''}`);
   }));
   v.querySelectorAll('[data-skyday]').forEach((b) => (b.onclick = async () => {
     if (!needAdmin()) return;
@@ -567,7 +567,7 @@ const actions = {
   addFs: () => addFsDialog(null),
   addSky: addSkyDialog,
   syncFs: () => act(() => api('/fs/sync', {}), (r) => `${r.updated} ta video yangilandi, ${r.newComments} yangi izoh.`),
-  syncSky: () => act(() => api('/sky/sync', {}), (r) => r.skipped ? 'Hisoblash o‘chirilgan.' : `${r.processed} ta video hisoblandi, +${r.meters} m.`),
+  syncSky: () => act(() => api('/sky/sync', {}), (r) => r.queued ? (r.note || 'Hisoblash fonda boshlandi.') : 'Hisoblash boshlanmadi: ' + (r.error || r.status)),
   syncAll: () => act(async () => {
     const a = await api('/fs/sync', {});
     const b = await api('/sky/sync', {}).catch((e) => ({ error: e.message }));
