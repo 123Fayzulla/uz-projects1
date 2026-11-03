@@ -39,7 +39,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   if (!(await getIgToken(ctx))) return { skipped: 'no-token' };
 
   let calls = 0;
-  let added = 0, refreshed = 0, rotated = 0;
+  let added = 0, refreshed = 0, rotated = 0, removed = 0;
   const errors = [];
   let vidLimit = MAX_CALLS;
   const canCall = () => calls < MAX_CALLS && ctx.now() < deadline;
@@ -133,6 +133,8 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
       const c = await fetchOne(ctx, id); calls++;
       upsert(k, c, sky.comments[k].vid); refreshed++;
     } catch (e) {
+      // Izoh o‘chirilgan yoki yashirilgan bo‘lsa — hisobdan chiqaramiz, xato emas
+      if (e.code === 'NOT_FOUND') { delete sky.comments[k]; removed = (removed || 0) + 1; continue; }
       errors.push(`izoh ${id}: ${e.message}`);
       if (e.code === 'IG_RATE' || e.code === 'IG_TOKEN') break;
     }
@@ -140,7 +142,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
 
   const at = ctx.now();
   sky.lastSync = at;
-  sky.lastResult = { at, processed: sky.videos.length, meters: added, newComments: added, refreshed, rotated, calls, failed: errors.length, errors, partial: calls >= MAX_CALLS };
+  sky.lastResult = { at, processed: sky.videos.length, meters: added, newComments: added, refreshed, rotated, removed, calls, failed: errors.length, errors, partial: calls >= MAX_CALLS };
   sky.history = [{ at, type: 'scan', text: `Yangilash: +${added} yangi, ${refreshed} top izoh yangilandi, ${rotated} izoh qayta o‘qildi` }, ...(sky.history || [])].slice(0, 300);
   await ctx.store.set(KEYS.sky, sky);
   return sky.lastResult;
