@@ -3,7 +3,7 @@
 // 3) izohlarning bir qismi (ROT_PAGES) navbat bilan qayta o‘qiladi.
 // Chaqiruvlar soni MAX_CALLS bilan cheklanadi (Instagram so‘rov limiti uchun).
 import { REGIONS, REGION_IDS, matchRegions } from './regions.mjs';
-import { KEYS, loadSky, igFetch, igUrl, getIgToken, igFindMedia, AppError } from './core.mjs';
+import { KEYS, loadSky, igFetch, igUrl, getIgToken, igFindMedia, AppError, skyExcluded } from './core.mjs';
 
 const MAX_CALLS = 1000;  // bir yurishda umumiy so‘rovlar (imkon qadar ko‘p)   // bir yurishda umumiy so‘rovlar chegarasi
 const NEW_PAGES = 10;     // yangi izohlar uchun eng ko‘pi bilan sahifalar
@@ -51,6 +51,7 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
   const order = [...igVids.slice(startAt), ...igVids.slice(0, startAt)];
   sky.rr = (startAt + 1) % Math.max(1, igVids.length);
   const upsert = (key, c, vid) => {
+    if (skyExcluded({ a: c.author })) return 'skip';
     const cur = sky.comments[key];
     if (!cur) {
       sky.comments[key] = { r: matchRegions(c.text), t: c.text.slice(0, 200), l: c.like, a: c.author, at: c.at, vid };
@@ -140,6 +141,8 @@ export async function skyStep(ctx, { budgetMs = 13 * 60 * 1000 } = {}) {
     }
   }
 
+  // O‘zimizning izohlar Skyline’dan chiqariladi
+  for (const k of Object.keys(sky.comments)) if (skyExcluded(sky.comments[k])) delete sky.comments[k];
   const at = ctx.now();
   sky.lastSync = at;
   sky.lastResult = { at, processed: sky.videos.length, meters: added, newComments: added, refreshed, rotated, removed, calls, failed: errors.length, errors, partial: calls >= MAX_CALLS };

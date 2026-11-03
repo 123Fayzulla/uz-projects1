@@ -759,6 +759,9 @@ export async function syncSky(ctx, { budgetMs = 8500, id = null, force = false }
 
 // Skyline uchun: Toshkent viloyati va Toshkent shahri bitta "Toshkent" hududi sifatida sanaladi.
 // Bu faqat Skyline’ga tegishli; Unutilgan Ruhlar hisobi o‘zgarmaydi.
+// Skyline’da hisobga olinmaydigan muallif(lar) — o‘zimizning akkaunt
+export const SKY_EXCLUDED = ['milliy_animatsiya'];
+export const skyExcluded = (c) => SKY_EXCLUDED.includes(String(c.a || '').toLowerCase());
 export const skyKey = (r) => (r === 'toshkent_v' || r === 'toshkent_sh' ? 'toshkent' : r);
 export const skyCommentKeys = (c) => [...new Set((c.r || []).map(skyKey))];
 export const SKY_REGIONS = (() => {
@@ -774,7 +777,7 @@ export const SKY_REGIONS = (() => {
 
 export function skySummary(sky, now) {
   const m = {};
-  for (const c of Object.values(sky.comments)) for (const k of skyCommentKeys(c)) m[k] = (m[k] || 0) + 1;
+  for (const c of Object.values(sky.comments)) { if (skyExcluded(c)) continue; for (const k of skyCommentKeys(c)) m[k] = (m[k] || 0) + 1; }
   const corr = (k) => (k === 'toshkent'
     ? (sky.corrections.toshkent_v || 0) + (sky.corrections.toshkent_sh || 0)
     : (sky.corrections[k] || 0));
@@ -783,7 +786,7 @@ export function skySummary(sky, now) {
     meters: (m[r.id] || 0) + corr(r.id),
   }));
   const countsByVid = {};
-  for (const c of Object.values(sky.comments)) if (c.vid) countsByVid[c.vid] = (countsByVid[c.vid] || 0) + 1;
+  for (const c of Object.values(sky.comments)) if (c.vid && !skyExcluded(c)) countsByVid[c.vid] = (countsByVid[c.vid] || 0) + 1;
   return {
     active: !!sky.active,
     regions,
@@ -842,6 +845,7 @@ export { saveStatus };
 export function skyOwners(sky) {
   const best = {};
   for (const c of Object.values(sky.comments || {})) {
+    if (skyExcluded(c)) continue;
     for (const r of skyCommentKeys(c)) {
       const cur = best[r];
       const better = !cur || (c.l || 0) > cur.likes || ((c.l || 0) === cur.likes && String(c.at) < String(cur.at));
