@@ -548,7 +548,7 @@ function bind() {
   v.querySelectorAll('[data-process]').forEach((b) => (b.onclick = async () => {
     const done = b.dataset.done === 'true';
     if (done && !(await confirmDlg('Video qayta tekshiriladi. Avval sanalgan izohlar qayta sanalmaydi — faqat yangi izohlar qo‘shiladi.', 'Tekshirish', false))) return;
-    act(() => api('/sky/process', { id: b.dataset.process, force: done }), (r) => `${r.processed} ta video: ${r.newComments} yangi izoh, +${r.meters} m.${r.errors && r.errors.length ? ' ' + r.errors[0] : ''}`);
+    act(() => api('/sky/process', { id: b.dataset.process, force: done }), (r) => r.queued ? (r.note || 'Hisoblash fonda boshlandi.') : 'Hisoblash boshlanmadi: ' + (r.error || r.status));
   }));
   v.querySelectorAll('[data-skyday]').forEach((b) => (b.onclick = async () => {
     if (!needAdmin()) return;
